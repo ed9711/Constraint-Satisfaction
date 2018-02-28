@@ -21,13 +21,30 @@ be accessed via methods.
 import random
 from copy import deepcopy
 
+
 def ord_dh(csp):
-    # TODO! IMPLEMENT THIS!
-    pass
+    highest_degree = 0
+    dh_var = None
+    for var in csp.get_all_unasgn_vars():
+        cons = csp.get_cons_with_var(var)
+        count = 0
+        for c in cons:
+            count += len(c.get_scope()) - 1
+        if count > highest_degree:
+            highest_degree = count
+            dh_var = var
+    return dh_var
+
 
 def ord_mrv(csp):
-    # TODO! IMPLEMENT THIS!
-    pass
+    min_var = None
+    min_domain = 999999
+    for var in csp.get_all_unasgn_vars():
+        if min_domain > var.cur_domain_size():
+            min_domain = var.cur_domain_size()
+            min_var = var
+    return min_var
+
 
 def val_lcv(csp, var):
     # TODO! IMPLEMENT THIS!
