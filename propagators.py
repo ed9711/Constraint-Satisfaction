@@ -58,6 +58,7 @@ unassigned variable left
 
 '''
 
+
 def prop_BT(csp, newVar=None):
     '''
     Do plain backtracking propagation. That is, do no propagation at all. Just 
@@ -75,9 +76,39 @@ def prop_BT(csp, newVar=None):
                 return False, []
     return True, []
 
+
 def prop_FC(csp, newVar=None):
-    # TODO! IMPLEMENT THIS!
-    pass
+    cons = []
+    to_remove = []
+    if newVar:
+        cons = csp.get_cons_with_var(newVar)
+    else:
+        cons = csp.get_all_cons()
+    for c in cons:
+        if c.get_n_unasgn() == 1:
+            vars = c.get_unasgn_vars()
+
+            vals2 = []
+            vars2 = c.get_scope()
+            for var in vars2:
+                vals2.append(var.get_assigned_value())
+
+            i = 0
+            for val in vals2:
+                if val is None:
+                    break
+                i += 1
+
+            for x in vars[0].cur_domain():
+                vals2[i] = x
+                if not c.check(vals2):
+                    if (vars[0], x) not in to_remove:
+                        to_remove.append((vars[0], x))
+                        vars[0].prune_value(x)
+            if vars[0].cur_domain_size() == 0:
+                return False, to_remove
+    return True, to_remove
+
 
 def prop_GAC(csp, newVar=None):
     '''
@@ -85,5 +116,35 @@ def prop_GAC(csp, newVar=None):
     all constraints. Otherwise we do GAC enforce with constraints containing 
     newVar on GAC Queue.
     '''
-    # TODO! IMPLEMENT THIS!
-    pass
+    to_remove = []
+    queue = []
+    if newVar:
+        queue.extend(csp.get_cons_with_var(newVar))
+    else:
+        queue.extend(csp.get_all_cons())
+
+    while len(queue) != 0:
+        cons = queue.pop(0)
+        for var in cons.get_unasgn_vars():
+            vals2 = []
+            vars2 = c.get_scope()
+            for var in vars2:
+                vals2.append(var.get_assigned_value())
+
+            i = 0
+            for val in vals2:
+                if val is None:
+                    break
+                i += 1
+            for x in var.cur_domain():
+                vals2[i] = x
+                if not cons.check(vals2):
+                    if (vars, x) not in to_remove:
+                        to_remove.append((vars, x))
+                        vars.prune_value(x)
+            if vars.cur_domain_size() == 0:
+                return False, to_remove
+            for c in csp.get_cons_with_var(var):
+                if c not in queue:
+                    queue.append(c)
+    return True, to_remove
