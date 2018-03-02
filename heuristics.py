@@ -19,10 +19,12 @@ be accessed via methods.
 '''
 
 import random
+import operator
 from copy import deepcopy
 
 
 def ord_dh(csp):
+    # find largest number of other vars on its constraints
     highest_degree = 0
     dh_var = None
     for var in csp.get_all_unasgn_vars():
@@ -37,6 +39,7 @@ def ord_dh(csp):
 
 
 def ord_mrv(csp):
+    # find smallest domain size
     min_var = None
     min_domain = 999999
     for var in csp.get_all_unasgn_vars():
@@ -47,5 +50,14 @@ def ord_mrv(csp):
 
 
 def val_lcv(csp, var):
-    # TODO! IMPLEMENT THIS!
-    pass
+    # find var that share domain with least other vars
+    domains = dict()
+    for domain in var.cur_domain():
+        for v in csp.get_all_unasgn_vars():
+            count = 0
+            if domain in v.cur_domain():
+                count += 1
+        domains[domain] = count
+    ordered_result = sorted(domains.items(), key=operator.itemgetter(1))
+    return ordered_result
+

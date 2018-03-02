@@ -90,6 +90,8 @@ def prop_FC(csp, newVar=None):
 
             vals2 = []
             vars2 = c.get_scope()
+
+            #found has_support after this so i m not gonna change it
             for var in vars2:
                 vals2.append(var.get_assigned_value())
 
@@ -118,6 +120,7 @@ def prop_GAC(csp, newVar=None):
     '''
     to_remove = []
     queue = []
+    # add cons
     if newVar:
         queue.extend(csp.get_cons_with_var(newVar))
     else:
@@ -126,25 +129,17 @@ def prop_GAC(csp, newVar=None):
     while len(queue) != 0:
         cons = queue.pop(0)
         for var in cons.get_unasgn_vars():
-            vals2 = []
-            vars2 = c.get_scope()
-            for var in vars2:
-                vals2.append(var.get_assigned_value())
-
-            i = 0
-            for val in vals2:
-                if val is None:
-                    break
-                i += 1
             for x in var.cur_domain():
-                vals2[i] = x
-                if not cons.check(vals2):
-                    if (vars, x) not in to_remove:
-                        to_remove.append((vars, x))
-                        vars.prune_value(x)
-            if vars.cur_domain_size() == 0:
-                return False, to_remove
-            for c in csp.get_cons_with_var(var):
-                if c not in queue:
-                    queue.append(c)
+                if not cons.has_support(var, x):
+                    # not supported
+                    if (var, x) not in to_remove:
+                        # not already to be removed
+                        to_remove.append((var, x))
+                        var.prune_value(x)
+                    if var.cur_domain_size() == 0:
+                        return False, to_remove
+                    # check new con from var, one step farther
+                    for c in csp.get_cons_with_var(var):
+                        if c not in queue:
+                            queue.append(c)
     return True, to_remove
