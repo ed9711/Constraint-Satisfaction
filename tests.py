@@ -17,6 +17,7 @@ BOARDS = [ [[3],[11,21,3,0],[12,22,2,1],[13,23,33,6,3],[31,32,5,0]],
 [[5],[11,12,21,22,10,0],[13,14,23,24,34,18,0],[15,25,35,2,1],[31,32,33,1,1],[41,42,43,51,52,53,600,3],[44,54,55,2,2],[45,3]], 
 [[6],[11,12,13,2,2],[14,15,3,1],[16,26,36,11,0],[21,22,23,2,2],[24,25,34,35,40,3],[31,41,51,61,14,0],[32,33,42,43,52,53,3600,3],[44,54,64,120,3],[45,46,55,56,1,1],[62,63,5,1],[65,66,5,0]]]
 
+
 ## HELPER FUNCTIONS
 def check_diff(vars, board):
     N = board[0][0]
@@ -37,6 +38,8 @@ def add_check(values, target):
         for v in values:
             sum += v
         if sum != target:
+            print(sum)
+            print(target)
             return False
         return True
 
@@ -82,6 +85,7 @@ def check_cages(vars, board):
             cell_i = (c[0] // 10)-1
             cell_j = (c[0] % 10)-1
             if vars[cell_i][cell_j].get_assigned_value() != val:
+                print("forcing it wrong")
                 return False
         if len(c) > 2:#larger cage
             val = c[len(c)-2]
@@ -93,17 +97,25 @@ def check_cages(vars, board):
                 cage_values.append(vars[cell_i][cell_j].get_assigned_value())
             if op == 0:
                 if add_check(cage_values,val) == False:
+                    print("add")
                     return False
             elif op == 1:
                 if sub_check(cage_values,val) == False:
+                    print("sub")
                     return False
             elif op == 2:
                 if div_check(cage_values,val) == False:
+                    print("div")
                     return False
             elif op ==3:
                 if mult_check(cage_values,val) == False:
+                    print("mul")
                     return False
     return True
+
+def print_kenken_soln(var_array):
+    for row in var_array:
+        print([var.get_assigned_value() for var in row])
 
 ########################################
 ##Necessary setup to generate CSP problems
@@ -179,7 +191,7 @@ class TestStringMethods(unittest.TestCase):
         self.helper_bne_grid(board)
 
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
-    def test_props_1(self):
+    def test_props_1(self): 
         board = BOARDS[0]
         self.helper_prop(board)
 
@@ -192,7 +204,7 @@ class TestStringMethods(unittest.TestCase):
     def test_props_3(self):
         board = BOARDS[2]
         self.helper_prop(board)
-
+        
     @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
     def test_props_4(self):
         board = BOARDS[3]
@@ -207,6 +219,36 @@ class TestStringMethods(unittest.TestCase):
     def test_props_6(self):
         board = BOARDS[5]
         self.helper_prop(board, prop_GAC)
+        
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
+    def test_props_7(self): 
+        board = BOARDS[0]
+        self.helper_prop(board, prop_GAC)
+
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
+    def test_props_8(self):
+        board = BOARDS[1]
+        self.helper_prop(board, prop_GAC)
+
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
+    def test_props_9(self):
+        board = BOARDS[2]
+        self.helper_prop(board, prop_GAC)
+        
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
+    def test_props_10(self):
+        board = BOARDS[3]
+        self.helper_prop(board, prop_GAC)
+
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")   
+    def test_props_11(self):
+        board = BOARDS[4]
+        self.helper_prop(board)
+
+    @unittest.skipUnless(TEST_PROPAGATORS and TEST_MODELS, "Not Testing Propagators and Models.")
+    def test_props_12(self):
+        board = BOARDS[5]
+        self.helper_prop(board)
 
     @unittest.skipUnless(TEST_HEURISTICS, "Not Testing Heuristics.")
     def test_ord_mrv_1(self):
@@ -235,8 +277,64 @@ class TestStringMethods(unittest.TestCase):
         var = []
         var = ord_mrv(simpleCSP)
         self.assertEqual(var.name, simpleCSP.vars[len(simpleCSP.vars)-1].name, "MRV Picked the wrong variable")
+        
+    @unittest.skipUnless(TEST_HEURISTICS, "Not Testing Heuristics.")
+    def test_ord_dh_1(self):
+        a = Variable('A', [1,2,3,4,5])
+        b = Variable('B', [1,2,3,4])
+        c = Variable('C', [1,2])
+        d = Variable('D', [1,2,3])
+        e = Variable('E', [1])
+        f = Variable('F', [6])
+        csp = CSP("Simple", [a,b,c,d,e,f])
+        c1 = Constraint("a b", [a,b])          
+        c2 = Constraint("a c", [a,c])
+        c3 = Constraint("a d", [a,d]) 
+        c4 = Constraint("a e", [a,e]) 
+        c5 = Constraint("a f", [b,f])
+        c6 = Constraint("c b", [b,c])
+        c7 = Constraint("c d", [c,d])
+        c8 = Constraint("c f", [c,f])
+        c9 = Constraint("d e", [e,d])
+        c10 = Constraint("e f", [e,b])
+        csp.add_constraint(c1)
+        csp.add_constraint(c2) 
+        csp.add_constraint(c3) 
+        csp.add_constraint(c4) 
+        csp.add_constraint(c5) 
+        csp.add_constraint(c6)
+        csp.add_constraint(c7) 
+        csp.add_constraint(c8) 
+        csp.add_constraint(c9) 
+        csp.add_constraint(c10) 
+        var = ord_dh(csp)    
+        self.assertEqual(var.name, 'A', "DH Picked the wrong variable")
+        a.assign(2)
+        var = ord_dh(csp)    
+        self.assertEqual(var.name, 'B', "DH Picked the wrong variable")
+        d.assign(1)
+        var = ord_dh(csp)    
+        self.assertEqual(var.name, 'B', "DH Picked the wrong variable") 
+        
+    @unittest.skipUnless(TEST_HEURISTICS, "Not Testing Heuristics.")
+    def test_val_1cv_1(self):
+        csp = nQueens(4)
+        vars = list(csp.vars)
+        var = val_lcv(csp, vars[0])
+        #print("sol")            
+        #print(var) 
+        vars[0].assign(2)
+        prop_FC(csp, vars[0])
+        var = val_lcv(csp,vars[1])
+        #print("sol")
+        #print(var)           
+        vars[1].assign(4)
+        prop_FC(csp, vars[1])
+        var = val_lcv(csp,vars[2])
+        #print("sol")
+        #print(var)  
 
-    ##Tests FC after the first queen is placed in position 1.
+    # Tests FC after the first queen is placed in position 1.
     @unittest.skipUnless(TEST_PROPAGATORS, "Not Testing Propagotors.")
     def test_simple_FC(self):
         queens = nQueens(8)
@@ -260,8 +358,12 @@ class TestStringMethods(unittest.TestCase):
         self.assertTrue(pruned[0], "Failed a FC test: returned DWO too early.")
         cur_var[4].assign(1)
         pruned = propagators.prop_FC(queens,newVar=cur_var[4])
-
         self.assertFalse(pruned[0], "Failed a FC test: should have resulted in a DWO")
 
 if __name__ == '__main__':
-    unittest.main()
+    #unittest.main()
+    try:
+        unittest.main()
+    except SystemExit as inst:
+        if inst.args[0] is True: # raised by sys.exit(True) when tests failed
+            raise 
